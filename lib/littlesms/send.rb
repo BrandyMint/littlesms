@@ -1,3 +1,5 @@
+require 'net/http'
+
 module LittleSms
   BASE_URL = "http://littlesms.ru/api/"
   SEND_TAIL = "message/send"
@@ -12,8 +14,14 @@ private
   class << self
     def response_status response
       json_resp = JSON.parse response.body
-      Rails.logger.info "LittleSms: sms sending fail. Errors: #{json_resp['error']}" if json_resp['error']
-      json_resp['status'] == "success"
+
+      if json_resp['status'] == 'success'
+        Rails.logger.info "LittleSms: sms sended successfully to #{json_resp['recipients']}"
+      else
+        Rails.logger.info "LittleSms: sms sending fail. Errors: #{json_resp['error']}: #{json_resp['message']}"
+      end
+
+      json_resp
     end
 
     def sms_params phone, message, options
